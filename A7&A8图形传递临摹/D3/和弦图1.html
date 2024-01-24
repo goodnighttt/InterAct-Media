@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  .arc path {
+    fill-opacity: 0.67;
+    stroke: #000;
+    stroke-width: 1px;
+  }
+
+  .ribbon path {
+    fill-opacity: 0.67;
+    stroke: #000;
+    stroke-width: 1px;
+  }
+</style>
+<body>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script>
+
+  var width = 960,
+          height = 960,
+          outerRadius = Math.min(width, height) * 0.5 - 40,
+          innerRadius = outerRadius - 30;
+
+  var chord = d3.chord()
+          .padAngle(0.05)
+          .sortSubgroups(d3.descending);
+
+  var arc = d3.arc()
+          .innerRadius(innerRadius)
+          .outerRadius(outerRadius);
+
+  var ribbon = d3.ribbon()
+          .radius(innerRadius);
+
+  var color = d3.scaleOrdinal()
+          .domain(d3.range(4))
+          .range(["#000000", "#FFDD89", "#957244", "#F26223"]);
+
+  var svg = d3.select("body")
+          .append("svg")
+          .attr("width", width)
+          .attr("height", height)
+          .append("g")
+          .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+          .datum(chord);
+
+  svg.append("g")
+          .attr("class", "ribbons")
+          .selectAll("path")
+          .data(function(chords) { return chords; })
+          .enter().append("path")
+          .attr("d", ribbon)
+          .style("fill", function(d) { return d.source.index === 0 ? color(d.target.index) : color(d.source.index); })
+          .style("stroke", function(d) { return d.source.index === 0 ? color(d.target.index) : color(d.source.index); });
+
+  svg.append("g")
+          .attr("class", "groups")
+          .selectAll("g")
+          .data(function(chords) { return chords.groups; })
+          .enter().append("g")
+          .append("path")
+          .style("fill", function(d) { return color(d.index); })
+          .style("stroke", function(d) { return color(d.index); })
+          .attr("d", arc);
+
+  d3.json("matrix.json").then(function(importedData) {
+    var matrix = importedData;
+    var chords = chord(matrix);
+
+    svg.datum(chords);
+
+    // 这里可以添加更多的代码来处理新的数据
+  });
+</script>

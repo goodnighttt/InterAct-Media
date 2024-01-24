@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Radar Chart with D3.js</title>
+    <style>
+        /* 样式表 */
+        .radar-chart {
+            width: 400px;
+            height: 400px;
+            margin: 50px auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- 雷达图容器 -->
+    <div id="radarChart" class="radar-chart"></div>
+
+    <!-- 引入D3.js库 -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // 数据
+        var data = [
+            { name: "准确度", value: 0.8 },
+            { name: "飘逸度", value: 0.6 },
+            { name: "粗细", value: 0.9 },
+            { name: "喜爱度", value: 0.5 },
+            { name: "梯度", value: 0.6 }
+        ];
+
+        // 设置雷达图参数
+        var width = 300;
+        var height = 300;
+        var radius = Math.min(width, height) / 3;
+        var angle = (Math.PI * 2) / data.length;
+
+
+        // 创建SVG容器
+        var svg = d3.select("#radarChart")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // 创建雷达图
+        var g = svg.append("g")
+            // .attr("transform", "translate(" + (width / 3) + "," + (height / 3) + ")")
+			.attr("transform", "translate(130, 150)"); // 添加偏移量来移动雷达图;
+
+        // 创建雷达图的坐标轴
+        var axis = g.selectAll(".axis")
+            .data(data)
+            .enter()
+            .append("g")
+            .attr("class", "axis");
+
+       // 创建雷达图的轴线和标签
+       axis.append("line")
+           .attr("x1", 0)
+           .attr("y1", 0)
+           .attr("x2", function (d, i) { return radius * Math.cos(angle * i); })
+           .attr("y2", function (d, i) { return radius * Math.sin(angle * i); });
+       
+       axis.append("text")
+           .attr("x", function (d, i) { 
+               var angleOffset = Math.PI / 2;  // 角度偏移量，使标签位置与顶点对应
+               var angle = (Math.PI * 2 / 5) * i - angleOffset;
+               var x = (radius + 20) * Math.cos(angle)-10;  // 标签离顶点的距离为半径+10
+               return x;
+           })
+           .attr("y", function (d, i) { 
+               var angleOffset = Math.PI / 2;  // 角度偏移量，使标签位置与顶点对应
+               var angle = (Math.PI * 2 / 5) * i - angleOffset;
+               var y = (radius + 10) * Math.sin(angle)+5;  // 标签离顶点的距离为半径+10
+               return y;
+           })
+           .text(function (d) { return d.name; });
+
+
+      // 创建雷达图的数据区域
+      var area = d3.areaRadial()
+          .angle(function (d, i) { return angle * i; })
+          .innerRadius(0)
+          .outerRadius(function (d) { return d.value * radius; });
+      
+      // 添加一个起始数据点到数据数组末尾，以闭合路径
+      data.push(data[0]);
+      
+      g.append("path")
+          .datum(data)
+          .attr("class", "area")
+          .attr("d", area)
+		  .attr("fill", "lightpink");
+
+	// 创建正五边形背景
+	var pentagon = g.append("polygon")
+	    .attr("class", "pentagon")
+	    .attr("points", function () {
+	        var points = [];
+	        for (var i = 0; i < 5; i++) {
+	            var angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+	            var x = radius * Math.cos(angle);
+	            var y = radius * Math.sin(angle);
+	            points.push(x + "," + y);
+	        }
+	        return points.join(" ");
+	    });
+
+		
+		
+
+	
+	// 设置正五边形背景样式
+	pentagon.attr("fill", "none")
+	    .attr("stroke", "lightgray")
+	    .attr("stroke-width", 1);
+	
+
+    </script>
+</body>
+</html>

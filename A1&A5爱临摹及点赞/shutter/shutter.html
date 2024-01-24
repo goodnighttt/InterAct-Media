@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>手风琴</title>
+		<link rel="stylesheet" type="text/css" href="shutter.css"/>
+	</head>
+	<body>
+		<div id="shutter">
+			<div class="box">
+				<img src="../image/ai1.jpg" id="1" >
+				<span class="dyText two" style="font-family: STXingkai">1</span>
+			</div>
+			<div class="box">
+				<img src="../image/ai2.jpg" id="2" >
+				<span class="dyText">2</span>
+			</div>
+			<div class="box">
+				<img src="../image/ai3.jpg" id="3">
+				<span class="dyText two">3</span>
+			</div>
+			<div class="box">
+				<img src="../image/ai4.jpg" id="4">
+				<span class="dyText">4</span>
+			</div>
+			<div class="box">
+				<img src="../image/ai5.jpg" id="5">
+				<span class="dyText">5</span>
+			</div>
+			<div class="box">
+				<img src="../image/ai6.jpg" id="6">
+				<span class="dyText">6</span>
+			</div>
+			<!-- <div class="box">
+				<img src="../../img/qing4.webp" id="清">
+				<span class="dyText">清</span>
+			</div> -->
+		</div>
+		<script type="text/javascript">
+			var dys=["1","2","3","4","5","6","7"];
+			const boxes=document.getElementsByTagName('img');
+			const words=document.getElementsByTagName('span');
+			for(let i=0;i<boxes.length;i++){
+				boxes[i].onmouseover=function(){
+					// console.log(1)
+					words[i].classList.add('dyHover');
+				}
+				boxes[i].onmouseleave=function(){
+					// console.log(2)
+					words[i].classList.remove('dyHover');
+				}
+				//点击
+				boxes[i].onclick=function(e){
+					console.log(e.target.id);
+					let dy=e.target.id;
+					// window.location.href = '../timeLine/人物脉络之河-生成面积图2.html?dy='+dy;
+					 window.location.href = '../heatmap2.html';
+				}
+			}
+			
+		</script>
+	</body>
+</html>

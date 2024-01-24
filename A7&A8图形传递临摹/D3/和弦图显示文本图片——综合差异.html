@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<body>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+
+  var outerRadius = Math.min(width, height) / 2 - 150,
+          innerRadius = outerRadius - 20;
+
+  var formatValue = d3.formatPrefix(",.0", 1e3);
+
+  var chord = d3.chord()
+          .padAngle(0.05)
+          .sortSubgroups(d3.descending);
+
+  var arc = d3.arc()
+          .innerRadius(innerRadius)
+          .outerRadius(outerRadius);
+
+  var ribbon = d3.ribbon()
+          .radius(innerRadius);
+
+  var color = d3.scaleOrdinal()
+          .domain(d3.range(4))
+          .range(["#000000", "#FFDD89", "#957244", "#F26223"]);
+
+  var svg = d3.select("body").append("svg")
+          .attr("width", width)
+          .attr("height", height)
+          .append("g")
+          .attr("transform", "translate(" + (width / 3 - 80 )  + "," + height / 2 + ")");
+
+
+  var tooltip = d3.select("body").append("div")
+      .style("position", "absolute")
+      .style("visibility", "hidden")
+      .style("background-color", "lightblue") // 浅蓝色背景
+      .style("padding", "5px")
+      .style("border", "1px solid black")
+      .style("border-radius", "20px"); // 圆角形状
+
+
+  d3.json("image_diff_matrices.json").then(function(data) {
+
+      var matrix = data['total_diff_matrix'];
+
+      var chordData = chord(matrix);
+
+      // 添加数据到tooltip文本中
+      var pixel_diff_matrix = data['pixel_diff_matrix'];
+      var gradient_diff_matrix = data['gradient_diff_matrix'];
+      var shape_context_diff_matrix = data['shape_context_diff_matrix'];
+
+    // var chord = d3.chord()
+    //     .padAngle(0.05)
+    //     .sortSubgroups(d3.descending)
+    //     (matrix);
+
+    // var chordData = chord(matrix);
+
+    var group = svg.append("g")
+            .selectAll("path")
+            .data(chordData.groups)
+            .enter().append("path")
+            .style("fill", function(d) { return color(d.index); })
+            .style("stroke", function(d) { return d3.rgb(color(d.index)).darker(); })
+            .attr("d", arc);
+
+    svg.append("g")
+            .selectAll("text")
+            .data(chordData.groups)
+            .enter().append("text")
+            .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
+            .attr("dy", ".35em")
+            .attr("transform", function(d) {
+              return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+                      + "translate(" + (outerRadius + 10) + ")"
+                      + (d.angle > Math.PI ? "rotate(180)" : "");
+            })
+            .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+            .text(function(d) { return (d.index+1); });
+
+
+    var tooltipImg = d3.select("body").append("img")
+            .style("position", "absolute")
+            .style("visibility", "hidden")
+            .style("border-radius", "50%"); // add this line;
+
+    var tooltipImg1 = d3.select("body").append("img")
+            .style("position", "absolute")
+            .style("visibility", "hidden")
+            .style("border-radius", "50%"); // add this line;
+
+    var ribbons = svg.append("g")
+            .attr("class", "ribbons")
+            .selectAll("path")
+            .data(chordData)
+            .enter().append("path")
+            .attr("d", ribbon)
+            .style("fill", function(d) { return color(d.target.index); })
+            .style("stroke", function(d) { return d3.rgb(color(d.target.index)).darker(); })
+            .style("opacity", 0.3)
+            .on("mouseover", function(d) {
+                var pixel_diff = pixel_diff_matrix[0][d.target.index];
+                var gradient_diff = gradient_diff_matrix[0][d.target.index];
+                var shape_context_diff = shape_context_diff_matrix[0][d.target.index];
+              tooltipImg.style("visibility", "visible")
+                      .attr("src", "A7/" + (d.target.index + 1) + "__no_borders.png")
+                      .style("top", (height/2)+"px")
+                      .style("left",(width/4*3-240)+"px");
+              tooltipImg1.style("visibility", "visible")
+                      .attr("src", "A7/1__no_borders.png")
+                      .style("top", (height/2)+"px")
+                      .style("left",(width/4*3+50)+"px");
+              tooltip.style("visibility", "visible")
+                    .html("像素差异度: " + pixel_diff + "<br>"
+                        + "梯度斜度差异度: " + gradient_diff + "<br>"
+                        + "轮廓差异度: " + shape_context_diff);
+              // .style("top", (d3.event.pageY-10)+"px")
+              // .style("left",(d3.event.pageX+10)+"px");
+              // tooltip.style("visibility", "visible")
+              //         .text("差异度: " + d.source.value);
+              d3.select(this).style("opacity", 0.95);
+            })
+            .on("mousemove", function() {
+              tooltip.style("top", (d3.event.pageY-10)+"px")
+                      .style("left",(d3.event.pageX+10)+"px");
+            })
+            .on("mouseout", function() {
+              tooltipImg.style("visibility", "hidden");
+              tooltipImg1.style("visibility", "hidden");
+              tooltip.style("visibility", "hidden");
+              d3.select(this).style("opacity", 0.5);
+            });
+
+  });
+</script>
+</body>

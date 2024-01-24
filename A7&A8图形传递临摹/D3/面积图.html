@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<body>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+    var svg = d3.select("body").append("svg")
+        .attr("width", 1000) // 增大宽度
+        .attr("height", 300); // 减小高度
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 50},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom,
+        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var x = d3.scaleLinear().rangeRound([0, width]);
+    var y = d3.scaleLinear().rangeRound([height, 0]);
+
+    var area = d3.area()
+        .x(function(d) { return x(d.image); })
+        .y1(function(d) { return y(d.difference); })
+        .curve(d3.curveCatmullRom.alpha(0.2)); // 添加平滑曲线
+
+    d3.json("differences.json").then(function(data) {
+        x.domain(d3.extent(data, function(d) { return d.image; }));
+        y.domain([0, d3.max(data, function(d) { return d.difference; })]);
+
+        area.y0(y(0));
+
+        g.append("path")
+            .datum(data)
+            .attr("fill", "steelblue")
+            .attr("d", area);
+
+        // 添加X轴
+        g.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+    });
+</script>
+</body>

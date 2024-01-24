@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-chord.v1.min.js"></script>
+<body>
+<script>
+
+  // 设置SVG参数
+  var svg = d3.select("body").append("svg")
+          .attr("width", 960)
+          .attr("height", 800)
+          .append("g")
+          .attr("transform", "translate(480,400)");
+
+  var width = 960,
+          height = 800,
+          outerRadius = Math.min(width, height) / 2 - 40,
+          innerRadius = outerRadius - 30;
+
+  // 定义弧生成器
+  var arc = d3.arc()
+          .innerRadius(innerRadius)
+          .outerRadius(outerRadius);
+
+  // 定义弦生成器
+  var ribbon = d3.ribbon().radius(innerRadius);
+
+  // 定义颜色比例尺
+  var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+  // 定义chord布局
+  var chord = d3.chord()
+          .padAngle(0.05)
+          .sortSubgroups(d3.descending);
+
+  // 定义矩阵
+  var matrix = [[0.0, 0.3789703845977783, 0.5362310409545898, 1.3776285648345947],
+    [1.7383297681808472, 0.0, 0.3085762560367584, 5.238390922546387],
+    [7.077071189880371, 0.5865973234176636, 0.0, 4.090930938720703],
+    [7.615525722503662, 0.7179478406906128, 0.7340549230575562, 0.0]];
+
+  // 创建和弦图
+  var chords = chord(matrix);
+
+  // 创建组和组的弧
+  var group = svg.selectAll(".group")
+          .data(chords.groups)
+          .enter().append("g")
+          .attr("class", "group");
+
+  group.append("path")
+          .style("fill", function(d) { return color(d.index); })
+          .style("stroke", function(d) { return d3.rgb(color(d.index)).darker(); })
+          .attr("d", arc);
+
+  // 创建弦
+  var ribbon = svg.selectAll(".ribbon")
+          .data(chords)
+          .enter().append("path")
+          .attr("class", "ribbon")
+          .attr("d", ribbon)
+          .style("fill", function(d) { return color(d.target.index); })
+          .style("stroke", function(d) { return d3.rgb(color(d.target.index)).darker(); });
+
+</script>
+</body>
+</html>

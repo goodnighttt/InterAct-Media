@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
+  <style>
+    .tooltip {
+      position: absolute;
+      padding: 8px;
+      background-color: rgb(255,255,255,0.8);
+      /* border: 1px solid lightcoral; */
+      pointer-events: none;
+      font-size: 14px;
+	  border-radius: 5px;
+	  
+    }
+	
+	.number-box {
+	      width: 34px;
+	      height: 35px;
+	      /* border: 1px solid #ccc; */
+	      display: inline-block;
+	      text-align: center;
+	      line-height: 50px;
+	      margin: 5px;
+	    }
+		
+	  .letter-box {
+		  width: 34px;
+		  height: 35px;
+		  /* border: 1px solid #ccc; */
+		  text-align: center;
+		  line-height: 50px;
+		  margin: 5px;
+		  
+		}
+	
+		.vertical-container {
+		  display: flex;
+		  flex-direction: column;
+		  align-items: center;
+		  position: relative;
+		  right: 0;
+		  left: -5px;
+		  top: -10px;
+		}
+		#down{display: flex;flex-direction: row;}
+		svg{position: relative;left: 0;top: 0;}
+  </style>
+</head>
+<body>
+	<div id="" style="display: flex;flex-direction: column;align-items: center;margin-top: 50px;margin-bottom: 30px;">
+		<img src="image/title.png" style="height: 10vh;">
+	</div>
+	<div id="" style="display: flex;flex-direction: row;align-items: center;justify-content: center;">
+		<div id="">
+			<div id="number-container"></div>
+			<div id="down">
+				<!-- <div id="vertical-container" class="vertical-container"></div> -->
+			</div>
+		</div>
+		
+		<!-- 雷达图容器 -->
+		<div id="radarChart" class="radar-chart" style="margin-left: 50px;">
+			<svg id="last"></svg>
+		</div>
+	</div>
+	
+	
+  <script>
+	  
+  
+    // 从本地的文本文件中获取数据
+    d3.text("like1.txt").then(function(text) {
+      // 将文本按行拆分为数组
+      var rows = text.trim().split("\n");
+
+      // 将每行数据拆分为数组，并转换为数值
+      var data = rows.map(function(row) {
+        return row.split(",").map(function(value) {
+          return +value;
+        });
+      });
+
+      // 读取 diff.csv 的数据
+        d3.csv("diff.csv").then(function(diffData) {
+          // 创建图像编号与数据的映射对象
+          var imageNumberMap = {};
+          diffData.forEach(function(d) {
+            var imageNumber = +d.image_number; // 将图像编号转换为数值
+            imageNumberMap[imageNumber] = {
+              pixel_diff: +d.pixel_diff,
+              centroid_diff: +d.centroid_diff,
+              gradient_diff: +d.gradient_diff,
+              thickness_diff: +d.thickness_diff,
+              total_diff: +d.total_diff
+            };
+          });
+      
+          // 定义矩形的尺寸和间距
+          var rectWidth = 40;
+          var rectHeight = 40;
+          var rectPadding = 4;
+      
+          // 计算画布的宽度和高度
+          var width = (rectWidth + rectPadding) * data[0].length;
+          var height = (rectHeight + rectPadding) * data.length;
+      
+          // 获取所有的图片路径
+          var imagePaths = [];
+          for (var i = 1; i <= 160; i++) {
+            imagePaths.push("image/images/" + i + ".jpg");
+          }
+		  
+		  // 创建雷达图
+		  var radarData = [
+			   { name: "总加权差异", value:0 },
+		    { name: "像素差异", value: 0 },
+		    { name: "重心差异", value:0},
+		    { name: "梯度差异", value: 0 },
+		    { name: "粗细差异", value: 0 }
+		   
+		  ];
+		  drawRadar(radarData)
+		  
+      
+          // 创建 SVG 元素
+          var svg = d3.select("#down")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+      
+          var div = d3.select("#down")
+            .append("div")
+            .attr("class", "vertical-container")
+            .attr("id", "vertical-container");
+      
+          // 创建颜色比例尺
+          var colorScale = d3.scaleLinear()
+            .domain([d3.min(data, function(d) { return d3.min(d); }), d3.max(data, function(d) { return d3.max(d); })])
+            .range(["#fbe5eb", "#f0255e"]);
+			
+		// 创建热度图
+		  var heatMap = svg.selectAll(".heatmap")
+		      .data(data)
+		      .enter()
+		      .append("g")
+		      .attr("class", "heatmap")
+		      .attr("transform", function(d, i) { return "translate(0," + (i * (rectHeight + rectPadding)) + ")"; });
+			  
+		 // 创建矩形
+		  var rects = heatMap.selectAll("rect")
+		    .data(function(d, i) { 
+		         return d.map(function(value, j) { 
+		           var cellIndex = i * data[0].length + j; // 按行展开的一维索引
+		           var imageNumber = cellIndex + 1; // 图片编号从1开始
+		           var diffData = imageNumberMap[imageNumber]; // 根据图片编号获取对应的diff数据
+		                     return {
+		                       value: value,
+		                       rowIndex: i,
+		                       columnIndex: j,
+		                       cellIndex: cellIndex,
+		                       imageNumber: imageNumber,
+		                       diffData: diffData
+		                     };
+		                   });
+		                 })
+		                 .enter()
+		                 .append("rect")
+		                 .attr("x", function(d) { return d.columnIndex * (rectWidth + rectPadding); })
+		                 .attr("y", 0)
+		                 .attr("width", rectWidth)
+		                 .attr("height", rectHeight)
+		                 .style("fill", function(d) { return colorScale(d.value); })
+		                 .on("mouseover", function(d) {
+		                   var rectX = +d3.select(this).attr("x");
+		                   var rectY = +d3.select(this).attr("y");
+		                   var likes = d.value;
+						   var index = d.cellIndex;
+		                   var imageNumber = d.imageNumber;
+		                   var diffData = d.diffData;
+		           
+				   
+		                   var tooltip = d3.select("body")
+		                     .append("div")
+		                     .attr("class", "tooltip")
+		                     .style("left", (rectX + rectWidth + rectPadding)+100 + "px")
+		                     .style("top", rectY + rectHeight + rectPadding +200+ "px");
+		           
+		                   tooltip.append("p")
+		                     .text("点赞数: " + likes);
+		           
+		                   // tooltip.append("p")
+		                   //   .text("Image Number: " + imageNumber);
+		           
+		           //         tooltip.append("p")
+		           //           .text("Pixel Diff: " + diffData.pixel_diff);
+		           
+		           //         tooltip.append("p")
+		           //           .text("Centroid Diff: " + diffData.centroid_diff);
+		           
+		           //         tooltip.append("p")
+		           //           .text("Gradient Diff: " + diffData.gradient_diff);
+		           
+		           //         tooltip.append("p")
+		           //           .text("Thickness Diff: " + diffData.thickness_diff);
+		           
+		           //         tooltip.append("p")
+		           //           .text("Total Diff: " + diffData.total_diff);
+							 
+							// 显示图片
+							var imagePath = imagePaths[index]; // 获取对应索引的图片路径
+							tooltip.append("img")
+							  .attr("src", imagePath)
+							  .style("max-width", "100px")
+							  .style("max-height", "100px"); 
+							 
+							
+							
+							// 创建雷达图
+							var radarData = [
+								{ name: "总加权差异", value: diffData.total_diff },
+							  { name: "像素差异", value: diffData.pixel_diff },
+							  { name: "重心差异", value: diffData.centroid_diff },
+							  { name: "梯度差异", value: diffData.gradient_diff },
+							  { name: "粗细差异", value: diffData.thickness_diff }
+							  
+							];
+							
+							
+							
+							 // console.log(radarData);
+							 
+							 
+							 drawRadar(radarData);
+							 
+							 
+							 
+							 
+							
+		                 })
+		                 .on("mouseout", function() {
+		                   d3.select(".tooltip").remove();
+		                 });
+						 
+			var numbers = d3.range(20, 0, -1); // 创建包含数字 20 到 1 的数组
+					
+					    d3.select("#number-container") // 选择包含数字的容器元素
+					      .selectAll(".number-box") // 选择具有指定类名的元素（在这里是要创建的 <div>）
+					      .data(numbers) // 绑定数据数组
+					      .enter()
+					      .append("div") // 创建 <div> 元素
+					      .attr("class", "number-box") // 添加类名
+					      .text(function(d) { return d; }); // 设置文本内容为绑定的数据
+						  
+						  
+			var letters = ["A", "B", "C", "D", "E", "F", "G", "H"]; // 创建包含字母 A 到 H 的数组
+			
+			    d3.select("#vertical-container") // 选择包含字母的容器元素
+			      .selectAll(".letter-box") // 选择具有指定类名的元素（在这里是要创建的 <div>）
+			      .data(letters) // 绑定数据数组
+			      .enter()
+			      .append("div") // 创建 <div> 元素
+			      .attr("class", "letter-box") // 添加类名
+			      .text(function(d) { return d; }); // 设置文本内容为绑定的数据
+				  
+				  
+				  
+				  
+				  
+		
+			  function drawRadar(radarData){
+				  var svglast = d3.select("#last")
+				  svglast.remove();
+				  
+				  
+				  // 设置雷达图参数
+				  var width = 300;
+				  var height = 300;
+				  var radius = Math.min(width, height) / 3;
+				  var angle = (Math.PI * 2) / radarData.length;
+				  
+				  
+				  // 创建SVG容器
+				  var svg = d3.select("#radarChart")
+				      .append("svg")
+					  .attr("id","last")
+				      .attr("width", width)
+				      .attr("height", height);
+				  
+				  // 创建雷达图
+				  var g = svg.append("g")
+				      // .attr("transform", "translate(" + (width / 3) + "," + (height / 3) + ")")
+				  	.attr("transform", "translate(130, 150)"); // 添加偏移量来移动雷达图;
+				  
+				  // 创建雷达图的坐标轴
+				  var axis = g.selectAll(".axis")
+				      .data(radarData)
+				      .enter()
+				      .append("g")
+				      .attr("class", "axis");
+				  								 
+				  								 
+				  // 创建雷达图的轴线和标签
+				  axis.append("line")
+				      .attr("x1", 0)
+				      .attr("y1", 0)
+				      .attr("x2", function (d, i) { return radius * Math.cos(angle * i); })
+				      .attr("y2", function (d, i) { return radius * Math.sin(angle * i); });
+				  
+				  axis.append("text")
+				      .attr("x", function (d, i) { 
+				          var angleOffset = Math.PI / 2;  // 角度偏移量，使标签位置与顶点对应
+				          var angle = (Math.PI * 2 / 5) * i - angleOffset;
+				          var x = (radius + 20) * Math.cos(angle)-10;  // 标签离顶点的距离为半径+10
+				          return x;
+				      })
+				      .attr("y", function (d, i) { 
+				          var angleOffset = Math.PI / 2;  // 角度偏移量，使标签位置与顶点对应
+				          var angle = (Math.PI * 2 / 5) * i - angleOffset;
+				          var y = (radius + 10) * Math.sin(angle)+5;  // 标签离顶点的距离为半径+10
+				          return y;
+				      })
+				      .text(function (d) { return d.name; });
+				  								 
+				  
+				  			 
+				  			 // 创建雷达图的数据区域
+				  			 var area = d3.areaRadial()
+				  				 .angle(function (d, i) { return angle * i; })
+				  				 .innerRadius(0)
+				  				 .outerRadius(function (d) { return d.value * radius; });
+				  			 
+				  			 // 添加一个起始数据点到数据数组末尾，以闭合路径
+				  			 radarData.push(radarData[0]);
+				  			 
+				  			 g.append("path")
+				  				 .datum(radarData)
+				  				 .attr("class", "area")
+				  				 .attr("d", area)
+				  					  .attr("fill", "lightpink");
+				  										  
+				  										  
+				   // 创建正五边形背景
+				   var pentagon = g.append("polygon")
+				       .attr("class", "pentagon")
+				       .attr("points", function () {
+				           var points = [];
+				           for (var i = 0; i < 5; i++) {
+				               var angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+				               var x = radius * Math.cos(angle);
+				               var y = radius * Math.sin(angle);
+				               points.push(x + "," + y);
+				           }
+				           return points.join(" ");
+				       });
+
+				   // 设置正五边形背景样式
+				   pentagon.attr("fill", "none")
+				       .attr("stroke", "lightpink")
+				       .attr("stroke-width", 1);
+			  }
+				  
+		 
+		   
+	});
+
+
+		
+		 
+
+    });
+  </script>
+</body>

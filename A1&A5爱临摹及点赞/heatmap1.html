@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <style>
+    .tooltip {
+      position: absolute;
+      padding: 8px;
+      background-color: rgb(255,255,255,0.8);
+      /* border: 1px solid lightcoral; */
+      pointer-events: none;
+      font-size: 14px;
+	  border-radius: 5px;
+	  
+    }
+	
+	.number-box {
+	      width: 34px;
+	      height: 35px;
+	      /* border: 1px solid #ccc; */
+	      display: inline-block;
+	      text-align: center;
+	      line-height: 50px;
+	      margin: 5px;
+	    }
+		
+	  .letter-box {
+		  width: 34px;
+		  height: 35px;
+		  /* border: 1px solid #ccc; */
+		  text-align: center;
+		  line-height: 50px;
+		  margin: 5px;
+		  
+		}
+	
+		.vertical-container {
+		  display: flex;
+		  flex-direction: column;
+		  align-items: center;
+		  position: relative;
+		  right: 0;
+		  left: -5px;
+		  top: -10px;
+		}
+		#down{display: flex;flex-direction: row;}
+		svg{position: relative;left: 0;top: 0;}
+  </style>
+</head>
+<body>
+	<div id="number-container"></div>
+	<div id="down">
+		<!-- <div id="vertical-container" class="vertical-container"></div> -->
+	</div>
+	
+  <script>
+	  
+  
+    // 从本地的文本文件中获取数据
+    d3.text("like1.txt").then(function(text) {
+      // 将文本按行拆分为数组
+      var rows = text.trim().split("\n");
+
+      // 将每行数据拆分为数组，并转换为数值
+      var data = rows.map(function(row) {
+        return row.split(",").map(function(value) {
+          return +value;
+        });
+      });
+
+      // 定义矩形的尺寸和间距
+      var rectWidth = 40;
+      var rectHeight = 40;
+      var rectPadding = 4;
+
+      // 计算画布的宽度和高度
+      var width = (rectWidth + rectPadding) * data[0].length;
+      var height = (rectHeight + rectPadding) * data.length;
+		
+	
+	  // 获取所有的图片路径
+		var imagePaths = [];
+		for (var i = 1; i <= 160; i++) {
+		  imagePaths.push("image/images/" + i + ".jpg");
+		}
+		
+		
+		
+		
+      // 创建 SVG 元素
+      var svg = d3.select("#down")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+		
+	var div = d3.select("#down")
+	  .append("div")
+	  .attr("class", "vertical-container")
+	  .attr("id", "vertical-container");
+		
+      // 创建颜色比例尺
+      var colorScale = d3.scaleLinear()
+        .domain([d3.min(data, function(d) { return d3.min(d); }), d3.max(data, function(d) { return d3.max(d); })])
+        .range(["#fbe5eb", "#f0255e"]);
+
+      // 创建热度图
+      var heatMap = svg.selectAll(".heatmap")
+        .data(data)
+        .enter()
+        .append("g")
+        .attr("class", "heatmap")
+        .attr("transform", function(d, i) { return "translate(0," + (i * (rectHeight + rectPadding)) + ")"; });
+
+      // 创建矩形
+      var rects = heatMap.selectAll("rect")
+        .data(function(d, i) { 
+          return d.map(function(value, j) { 
+            var cellIndex = i * data[0].length + j; // 按行展开的一维索引
+            return {
+              value: value,
+              rowIndex: i,
+              columnIndex: j,
+              cellIndex: cellIndex
+            };
+          });
+        })
+        .enter()
+        .append("rect")
+        .attr("x", function(d, i) { return d.columnIndex * (rectWidth + rectPadding); })
+        .attr("y", 0)
+        .attr("width", rectWidth)
+        .attr("height", rectHeight)
+        .style("fill", function(d) { return colorScale(d.value); })
+        .on("mouseover", function(d) {
+          var rectX = +d3.select(this).attr("x");
+          var rectY = +d3.select(this).attr("y");
+          var likes = d.value;
+          var index = d.cellIndex;
+          var rowIndex = d.rowIndex;
+          var columnIndex = d.columnIndex;
+      
+          var tooltip = d3.select("body")
+            .append("div")
+            .attr("class", "tooltip")
+            .style("left", (rectX + rectWidth + rectPadding) + "px")
+            .style("top", rectY + rectHeight + rectPadding + "px");
+      
+          tooltip.append("p")
+            .text("Likes: " + likes);
+      
+          tooltip.append("p")
+            .text("Index: " + index);
+      
+      //     tooltip.append("p")
+      //       .text("Row Index: " + rowIndex);
+      //     tooltip.append("p")
+      //       .text("Column Index: " + columnIndex);
+			
+		  // 显示图片
+			var imagePath = imagePaths[index]; // 获取对应索引的图片路径
+			tooltip.append("img")
+			  .attr("src", imagePath)
+			  .style("max-width", "100px")
+			  .style("max-height", "100px");
+        })
+        .on("mouseout", function() {
+          d3.select(".tooltip").remove();
+        });
+		
+		
+		
+		
+		 var numbers = d3.range(20, 0, -1); // 创建包含数字 20 到 1 的数组
+		
+		    d3.select("#number-container") // 选择包含数字的容器元素
+		      .selectAll(".number-box") // 选择具有指定类名的元素（在这里是要创建的 <div>）
+		      .data(numbers) // 绑定数据数组
+		      .enter()
+		      .append("div") // 创建 <div> 元素
+		      .attr("class", "number-box") // 添加类名
+		      .text(function(d) { return d; }); // 设置文本内容为绑定的数据
+			  
+			  
+	  var letters = ["A", "B", "C", "D", "E", "F", "G", "H"]; // 创建包含字母 A 到 H 的数组
+	  
+	      d3.select("#vertical-container") // 选择包含字母的容器元素
+	        .selectAll(".letter-box") // 选择具有指定类名的元素（在这里是要创建的 <div>）
+	        .data(letters) // 绑定数据数组
+	        .enter()
+	        .append("div") // 创建 <div> 元素
+	        .attr("class", "letter-box") // 添加类名
+	        .text(function(d) { return d; }); // 设置文本内容为绑定的数据
+
+    });
+  </script>
+</body>

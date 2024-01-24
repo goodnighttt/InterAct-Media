@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="music.js" type="text/javascript" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="music.css"/>
+		<style type="text/css">
+			.imgColumn{display: flex;flex-direction: column;justify-content: center;margin-right: 10px;}
+			.img{object-fit: cover;height: 10vh;width: 10vh;margin: 2px;border-radius: 7px;cursor: pointer;}
+			.cloud{height: 45vh;}
+			.kuang{height: 45vh;position: absolute;margin-left: 60px;}
+			#cloud1{margin-top: 8px;}
+			#cloud2{margin-left: 200px;}
+			.cloudpic{height: 45vh;}
+			.group{margin-top: 15px;}
+		</style>
+	</head>
+	<body>
+
+		
+		<!-- 滚动贴合 -->
+		<div id="container" style="position: relative;">
+			
+			
+			<div class="page" style="position: relative;display: flex;flex-direction: column;align-items: center;">
+			<div id="shutter">
+				<div class="box">
+					<img src="../image/ai1.jpg" id="1" >
+					<span class="dyText two" style="font-family: STXingkai">1</span>
+				</div>
+				<div class="box">
+					<img src="../image/ai2.jpg" id="2" >
+					<span class="dyText">2</span>
+				</div>
+				<div class="box">
+					<img src="../image/ai3.jpg" id="3">
+					<span class="dyText two">3</span>
+				</div>
+				<div class="box">
+					<img src="../image/ai4.jpg" id="4">
+					<span class="dyText">4</span>
+				</div>
+				<div class="box">
+					<img src="../image/ai5.jpg" id="5">
+					<span class="dyText">5</span>
+				</div>
+				<div class="box">
+					<img src="../image/ai6.jpg" id="6">
+					<span class="dyText">6</span>
+				</div>
+				<!-- <div class="box">
+					<img src="../../img/qing4.webp" id="清">
+					<span class="dyText">清</span>
+				</div> -->
+			</div>
+			
+			
+			</div>
+			
+			
+			<!-- 2 -->
+			<div class="page" style="position: relative;display: flex;flex-direction: column;align-items: center;">
+				<div id="" style="display: flex;flex-direction: column;align-items: center;margin-bottom: -30px;">
+					<img src="image/title.png" style="height: 10vh;">
+				</div>
+				<div id="whole" style="display: flex;flex-direction: row;align-items: center;justify-content: center;transform: scale(0.85);">
+					<div id="allImgs" style="display: flex;flex-direction: row;">
+						<div id="1" class="imgColumn" >
+							<div id="" class="group">E</div>
+							<img src="image/EA.png" class="img" id="EA" onclick="changeCloud(this)">
+							<img src="image/EB.png" class="img" id="EB" onclick="changeCloud(this)">
+							<img src="image/EC.png" class="img" id="EC" onclick="changeCloud(this)">
+							<img src="image/ED.png" class="img" id="ED" onclick="changeCloud(this)">
+							<div id="" class="group">F</div>
+							<img src="image/FA.png" class="img" id="FA" onclick="changeCloud(this)">
+							<img src="image/FB.png" class="img" id="FB" onclick="changeCloud(this)">
+							<img src="image/FC.png" class="img" id="FC" onclick="changeCloud(this)">
+							<img src="image/FD.png" class="img" id="FD" onclick="changeCloud(this)">
+						</div>
+						<div id="2" class="imgColumn" >
+							<div id="" class="group">H</div>
+							<img src="image/HA.png" class="img" id="HA" onclick="changeCloud(this)">
+							<img src="image/HB.png" class="img" id="HB" onclick="changeCloud(this)">
+							<img src="image/HC.png" class="img" id="HC" onclick="changeCloud(this)">
+							<img src="image/HD.png" class="img" id="HD" onclick="changeCloud(this)">
+							<div id="" class="group">L</div>
+							<img src="image/LA.png" class="img" id="LA" onclick="changeCloud(this)">
+							<img src="image/LB.png" class="img" id="LB" onclick="changeCloud(this)">
+							<img src="image/LC.png" class="img" id="LC" onclick="changeCloud(this)">
+							<img src="image/LD.png" class="img" id="LD" onclick="changeCloud(this)">
+						</div>
+						<div id="3" class="imgColumn" >
+							<div id="" class="group">S</div>
+							<img src="image/SA.png" class="img" id="SA" onclick="changeCloud(this)">
+							<img src="image/SB.png" class="img" id="SB" onclick="changeCloud(this)">
+							<img src="image/SC.png" class="img" id="SC" onclick="changeCloud(this)">
+							<img src="image/SD.png" class="img" id="SD" onclick="changeCloud(this)">
+							<div id="" class="group">W</div>
+							<img src="image/WA.png" class="img" id="WA" onclick="changeCloud(this)">
+							<img src="image/WB.png" class="img" id="WB" onclick="changeCloud(this)">
+							<img src="image/WC.png" class="img" id="WC" onclick="changeCloud(this)">
+							<img src="image/WD.png" class="img" id="WD" onclick="changeCloud(this)">
+						</div>
+						<div id="4" class="imgColumn" >
+							<div id="" class="group">Y</div>
+							<img src="image/YA.png" class="img" id="YA" onclick="changeCloud(this)">
+							<img src="image/YB.png" class="img" id="YB" onclick="changeCloud(this)">
+							<img src="image/YC.png" class="img" id="YC" onclick="changeCloud(this)">
+							<img src="image/YD.png" class="img" id="YD" onclick="changeCloud(this)">
+							<div id="" class="group">Z</div>
+							<img src="image/ZA.png" class="img" id="ZA" onclick="changeCloud(this)">
+							<img src="image/ZB.png" class="img" id="ZB" onclick="changeCloud(this)">
+							<img src="image/ZC.png" class="img" id="ZC" onclick="changeCloud(this)">
+							<img src="image/ZD.png" class="img" id="ZD" onclick="changeCloud(this)">
+						</div>
+						
+						
+					</div>
+					
+					<div id="wordcloudImg" style="display: flex;flex-direction: column;align-items: center;">
+						<div class="cloud" id="kuang1">
+							<img src="image/kuang1.png" class="kuang" style="z-index: 100;">
+							<img src="image/all1.png" class="cloudpic" id="cloud1">
+						</div>
+						
+						<!-- <div id="" style="display: flex;flex-direction: row;align-items: center;">
+							<img src="image/arrow.webp" style="height: 5vw;">
+							<div id="">创作后评价</div>
+						</div> -->
+						<div class="cloud" id="kuang2">
+							<img src="image/kuang2.png" class="kuang" id="kuang2pic" style="z-index: 100;">
+							<img src="image/all2.png" class="cloudpic" id="cloud2">
+						</div>
+						
+					</div>
+					
+					<div id="all" onclick="changeCloud(this)" style="cursor: pointer;background-color: #669900;color: white;border-radius: 20%;padding: 10px 30px;font-size: 20px;position: absolute;bottom: 60px;right: 0px;">
+						总
+					</div>
+				</div>
+			</div>
+			
+			
+		</div>
+		
+	<script type="text/javascript">
+		var dys=["1","2","3","4","5","6","7"];
+		const boxes=document.getElementsByTagName('img');
+		const words=document.getElementsByTagName('span');
+		for(let i=0;i<boxes.length;i++){
+			boxes[i].onmouseover=function(){
+				// console.log(1)
+				words[i].classList.add('dyHover');
+			}
+			boxes[i].onmouseleave=function(){
+				// console.log(2)
+				words[i].classList.remove('dyHover');
+			}
+			//点击
+			boxes[i].onclick=function(e){
+				console.log(e.target.id);
+				let dy=e.target.id;
+				// window.location.href = '../timeLine/人物脉络之河-生成面积图2.html?dy='+dy;
+				 window.location.href = '../heatmap2.html';
+			}
+		}
+		
+		function changeCloud(e){
+			console.log(e.id)
+			var id=e.id;
+			var newSrc1="image/"+id+"1.png";
+			var newSrc2="image/"+id+"2.png";
+			console.log(newSrc1)
+			
+			var cloud1=document.getElementById("cloud1");
+			var cloud2=document.getElementById("cloud2");
+			
+			cloud1.src=newSrc1;
+			cloud2.src=newSrc2;
+			
+			// cloud1.setAttribute("src",newSrc1);
+			// cloud2.setAttribute("src",newSrc2);
+		}
+		
+	</script>
+	</body>
+</html>

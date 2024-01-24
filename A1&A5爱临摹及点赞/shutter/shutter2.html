@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>手风琴</title>
+		<link rel="stylesheet" type="text/css" href="shutter.css"/>
+	</head>
+	<body>
+		<div id="shutter">
+			<div class="box">
+				<img src="../../img/liu5.webp" id="南朝" >
+				<span class="dyText two" style="font-family: STXingkai">六朝</span>
+			</div>
+			<div class="box">
+				<img src="../../img/tang2.webp" id="唐" >
+				<span class="dyText">唐</span>
+			</div>
+			<div class="box">
+				<img src="../../img/nan8.webp" id="南唐">
+				<span class="dyText two">南唐</span>
+			</div>
+			<div class="box">
+				<img src="../../img/song5.png" id="宋">
+				<span class="dyText">宋</span>
+			</div>
+			<div class="box">
+				<img src="../../img/yuan.jpg" id="元">
+				<span class="dyText">元</span>
+			</div>
+			<div class="box">
+				<img src="../../img/ming4.jpg" id="明">
+				<span class="dyText">明</span>
+			</div>
+			<div class="box">
+				<img src="../../img/qing4.webp" id="清">
+				<span class="dyText">清</span>
+			</div>
+		</div>
+		<script type="text/javascript">
+			var dys=["六朝","唐","南唐","宋","元","明","清"];
+			const boxes=document.getElementsByTagName('img');
+			const words=document.getElementsByTagName('span');
+			for(let i=0;i<boxes.length;i++){
+				boxes[i].onmouseover=function(){
+					// console.log(1)
+					words[i].classList.add('dyHover');
+				}
+				boxes[i].onmouseleave=function(){
+					// console.log(2)
+					words[i].classList.remove('dyHover');
+				}
+				//点击
+				boxes[i].onclick=function(e){
+					console.log(e.target.id);
+					let dy=e.target.id;
+					window.location.href = '../timeLine/人物脉络之河-生成面积图3.html?dy='+dy;
+				}
+			}
+			
+		</script>
+	</body>
+</html>

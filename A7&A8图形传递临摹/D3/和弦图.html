@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<body>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+    var width = 960,
+        height = 960,
+        outerRadius = Math.min(width, height) / 2 - 40,
+        innerRadius = outerRadius - 30;
+
+    var formatValue = d3.formatPrefix(",.0", 1e3);
+
+    var chord = d3.chord()
+        .padAngle(0.05)
+        .sortSubgroups(d3.descending);
+
+    var arc = d3.arc()
+        .innerRadius(innerRadius)
+        .outerRadius(outerRadius);
+
+    var ribbon = d3.ribbon()
+        .radius(innerRadius);
+
+    var color = d3.scaleOrdinal()
+        .domain(d3.range(4))
+        .range(["#000000", "#FFDD89", "#957244", "#F26223"]);
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+
+    var tooltip = d3.select("body").append("div")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .style("background-color", "white")
+        .style("padding", "5px")
+        .style("border", "1px solid black");
+
+    d3.json("matrix2.json").then(function(matrix) {
+
+        var chordData = chord(matrix);
+
+        // var chord = d3.chord()
+        //     .padAngle(0.05)
+        //     .sortSubgroups(d3.descending)
+        //     (matrix);
+
+        // var chordData = chord(matrix);
+
+        var group = svg.append("g")
+            .selectAll("path")
+            .data(chordData.groups)
+            .enter().append("path")
+            .style("fill", function(d) { return color(d.index); })
+            .style("stroke", function(d) { return d3.rgb(color(d.index)).darker(); })
+            .attr("d", arc);
+
+        svg.append("g")
+            .selectAll("text")
+            .data(chordData.groups)
+            .enter().append("text")
+            .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
+            .attr("dy", ".35em")
+            .attr("transform", function(d) {
+                return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+                    + "translate(" + (outerRadius + 10) + ")"
+                    + (d.angle > Math.PI ? "rotate(180)" : "");
+            })
+            .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+            .text(function(d) { return "Image " + d.index; });
+
+
+
+        var ribbons = svg.append("g")
+            .attr("class", "ribbons")
+            .selectAll("path")
+            .data(chordData)
+            .enter().append("path")
+            .attr("d", ribbon)
+            .style("fill", function(d) { return color(d.target.index); })
+            .style("stroke", function(d) { return d3.rgb(color(d.target.index)).darker(); })
+            .style("opacity", 0.5)
+            .on("mouseover", function(d) {
+                tooltip.style("visibility", "visible")
+                    .text("Difference: " + d.source.value);
+                d3.select(this).style("opacity", 0.8);
+            })
+            .on("mousemove", function() {
+                tooltip.style("top", (d3.event.pageY-10)+"px")
+                    .style("left",(d3.event.pageX+10)+"px");
+            })
+            .on("mouseout", function() {
+                tooltip.style("visibility", "hidden");
+                d3.select(this).style("opacity", 0.5);
+            });
+
+    });
+</script>
+</body>

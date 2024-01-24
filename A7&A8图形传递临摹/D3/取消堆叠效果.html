@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<body>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+  var areaSvg = d3.select("body").append("svg")
+          .attr("width", 1000)
+          .attr("height", 350);
+
+  var margin = {top: 50, right: 20, bottom: 30, left: 50},
+          width = +areaSvg.attr("width") - margin.left - margin.right,
+          height = +areaSvg.attr("height") - margin.top - margin.bottom,
+          g = areaSvg .append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  var xScale = d3.scaleLinear().range([0, width]);
+  var yScale = d3.scaleLinear().range([height, 0]);
+
+  var area = d3.area()
+          .x(function(d) { return xScale(d.image_number); })
+          .y0(height)
+          .y1(function(d) { return yScale(d.value); })
+          .curve(d3.curveCatmullRom.alpha(0.4));
+
+  d3.json("image_diff_data.json").then(function(data) {
+    var keys = ["pixel_diff", "gradient_diff", "shape_context_diff", "total_diff"];
+
+    xScale.domain(d3.extent(data, function(d) { return d.image_number; }));
+    yScale.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]);
+
+    var colors = d3.scaleOrdinal()
+            .domain(keys)
+            // .range(["#AEC5EB", "#C7D1C4", "#F7CEAC", "#BFD3D6"]);
+        // .range(["#FDCBEE", "#FFDFD3", "#FFFBBD", "#C8E7E2"]); // 使用马卡龙色系
+        .range(["#FF0000", "#00FF00", "#0000FF", "#FFFF00"]); // 定义不同的颜色
+
+    keys.forEach(function(key, i) {
+      g.append("path")
+              .datum(data)
+              .attr("class", "area " + key)
+              .attr("d", area.y1(function(d) { return yScale(d[key]); }))
+              .style("fill", colors(key))
+              .style("opacity", 0.2);
+    });
+
+    g.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(xScale));
+
+    g.append("g")
+            .call(d3.axisLeft(yScale));
+
+    var buttons = areaSvg .append("g")
+            .attr("transform", "translate(" + margin.left + "," + (margin.top - 60) + ")");
+
+    buttons.selectAll("circle")
+            .data(keys)
+            .enter()
+            .append("circle")
+            .attr("cx", function(d, i) { return 60 + i * 120; })
+            .attr("cy", 20)
+            .attr("r", 10)
+            .style("fill", function(d) { return colors(d); })
+            .on("click", function(d) {
+                areaSvg.selectAll(".area")
+                      .style("opacity", 0.3);
+
+                areaSvg.selectAll("." + d)
+                      .style("opacity", 1);
+            });
+
+  });
+</script>
+</body>
+</html>

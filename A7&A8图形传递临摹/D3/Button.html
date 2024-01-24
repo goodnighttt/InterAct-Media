@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<body>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+  var svg = d3.select("body").append("svg")
+          .attr("width", 1000) // 增大宽度
+          .attr("height", 350); // 减小高度
+
+  var margin = {top: 50, right: 20, bottom: 30, left: 50},
+          width = +svg.attr("width") - margin.left - margin.right,
+          height = +svg.attr("height") - margin.top - margin.bottom,
+          // height = 300,
+          g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  var xScale = d3.scaleLinear().range([0, width]);
+  var yScale = d3.scaleLinear().range([height, 0]);
+
+  var area = d3.area()
+          .x(function(d) { return xScale(d.data.image_number); })
+          .y0(function(d) { return yScale(d[0]); })
+          .y1(function(d) { return yScale(d[1]); })
+          .curve(d3.curveCatmullRom.alpha(0.4)); // 添加平滑曲线;
+
+  d3.json("image_diff_data.json").then(function(data) {
+    var keys = ["pixel_diff", "gradient_diff", "shape_context_diff", "total_diff"];
+    // var stack = d3.stack().keys(keys)(data);
+      var stack = d3.stack().keys(keys).offset(d3.stackOffsetNone)(data);
+
+
+      xScale.domain(d3.extent(data, function(d) { return d.image_number; }));
+      yScale.domain([0, d3.max(stack, function(d) { return d3.max(d, function(e) { return e[1]; }); })]);
+
+    var colors = d3.scaleOrdinal()
+            .domain(keys)
+            // .range(["#F9D9E9", "#FFDDD0", "#FFF8C2", "#D4EDE9"]); // 定义不同的颜色
+            .range(["#AEC5EB", "#C7D1C4", "#F7CEAC", "#BFD3D6"]); // 使用饱和度较低的颜色
+
+
+    var layer = g.selectAll(".layer")
+            .data(stack)
+            .enter().append("g")
+            .attr("class", "layer");
+
+      layer.append("path")
+          .attr("class", function(d) { return "area " + d.key; })  // 在这里为每个路径添加一个独特的类名
+          .attr("d", area)
+          .style("fill", function(d) { return colors(d.key); })
+          .style("opacity", 0.3); // 初始透明度
+
+    // 添加X轴
+    g.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(xScale));
+
+    // 添加Y轴
+    g.append("g")
+            .call(d3.axisLeft(yScale));
+
+      // 创建按钮
+      var buttons = svg.append("g")
+          .attr("transform", "translate(" + margin.left + "," + (margin.top - 60) + ")");
+
+      buttons.selectAll("circle")
+          .data(keys)
+          .enter()
+          .append("circle")
+          .attr("cx", function(d, i) { return 60 + i * 120; })
+          .attr("cy", 20)
+          .attr("r", 10)
+          .style("fill", function(d) { return colors(d); })
+          .on("click", function(d) {
+              // 重置所有面积图透明度为初始值
+              layer.selectAll(".area")
+                  .style("opacity", 0.3);
+
+              // 设置选中按钮对应的面积图透明度加深
+              layer.selectAll("." + d)
+                  .style("opacity", 1);
+          });
+
+  });
+</script>
+</body>
